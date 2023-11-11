@@ -1,0 +1,79 @@
+{
+  "uuid": "9dbcc05f-3e21-47d9-aa90-1c154ec74142",
+  "lastMigration": 29,
+  "name": "Apiclimatempo mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "ac188b79-6be6-45d9-b8ca-b6213be8ae07",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/forecast/region/[a-zA-Z0-9]*",
+      "responses": [
+        {
+          "uuid": "25069461-bd3e-4cab-92e5-dc2cc4d5aa7c",
+          "body": "{\n  \"region\": \"Sul\",\n  \"acronym\": \"SU\",\n  \"data\": [\n    {\n      \"date\": \"2023-11-11\",\n      \"date_br\": \"11/11/2023\",\n      \"image\": \"https://imagens.climatempo.com.br/mapas/yysuprev1.gif\"\n    },\n    {\n      \"date\": \"2023-11-12\",\n      \"date_br\": \"12/11/2023\",\n      \"image\": \"https://imagens.climatempo.com.br/mapas/yysuprev2.gif\"\n    },\n    {\n      \"date\": \"2023-11-13\",\n      \"date_br\": \"13/11/2023\",\n      \"image\": \"https://imagens.climatempo.com.br/mapas/yysuprev3.gif\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id"
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "ac188b79-6be6-45d9-b8ca-b6213be8ae07"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": []
+}
