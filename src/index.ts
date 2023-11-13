@@ -68,7 +68,7 @@ function recuperaMetricasPorRegiao() {
 }
 
 async function enviaMensagemProMessengerPorWebSocket(mensagem: string) {
-  let client = new WebSocket('ws://localhost:8080/messenger/7099525940107412');
+  let client = new WebSocket('ws://localhost:8080/messenger/' + process.env.SENDER_ID);
   client.on('message', (msg) => LOGGER.log('Mensagem -> {}', msg));
   LOGGER.log('Esperamos o cliente conectar com o servidor');
   // Esperamos o cliente conectar com o servidor usando async/await
