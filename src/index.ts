@@ -3,43 +3,57 @@ import ConsoleLogger from './console-logger';
 import axios, { AxiosInstance } from 'axios';
 import fs from 'fs';
 import moment from 'moment';
-import WebSocket, { WebSocketServer } from 'ws';
+import WebSocket from 'ws';
 
 require('dotenv').config(); // Carrega o .env no process.env
 
 const pathArquivoLog: string = process.env.PATH_ARQUIVO_LOGS ?? `${__dirname}/../logs`;
 const urlApiClimaTempo = process.env.URL_API_CLIMATEMPO ?? 'http://apiadvisor.climatempo.com.br';
-const token: string = process.env.TOKEN_API_CLIMATEMPO ?? '';
-const pathArquivoDeRelatorio: string = process.env.PATH_ARQUIVO_RELATORIO ?? `${__dirname}/../resultado/relatorio.txt`;
-const regiao: string = 'sul';
+const pathArquivoDeRelatorio: string = process.env.PATH_ARQUIVO_RELATORIO ?? `${__dirname}/../resultado`;
 
 const LOGGER: ConsoleLogger = ConsoleLogger.getInstance('index');
 const apiClimaTempo: AxiosInstance = axios.create({ baseURL: urlApiClimaTempo });
 
-// executa todos os dias as 06:00, 14:00 e 22:00
+let clientWebSocket: WebSocket;
+
 cron.schedule(
-  // '0 0 6,14,22 * * *',
-  '* * * * *',
-  () => {
+  process.env.CRON_JOB ?? '* * * * *',
+  async () => {
     LOGGER.log('Iniciando Job');
+
+    await iniciaClientWebSocket();
+
+    recuperaMetricasPorPais();
 
     recuperaMetricasPorRegiao();
 
-    LOGGER.log('Job em andamento...');
+    LOGGER.log('Job iniciado e em andamento...');
     persisteLogs();
   },
   { timezone: 'America/Sao_Paulo' }
 );
 
+async function iniciaClientWebSocket() {
+  clientWebSocket = new WebSocket(`ws://${process.env.HOST_SERVER_WEBSOCKET}/messenger/${process.env.SENDER_ID}`);
+  clientWebSocket.on('message', (msg) => LOGGER.log('Mensagem recebida no WebSocket'));
+
+  LOGGER.log('Esperando o cliente conectar com o servidor...');
+  await new Promise((resolve) => clientWebSocket.once('open', resolve));
+}
+
 function recuperaMetricasPorRegiao() {
+  LOGGER.log('Iniciando step para recuperar métricas por região');
+
   apiClimaTempo
-    .get(`/api/v1/forecast/region/${regiao}?token=${token}`)
-    .then(async (res) => {
+    .get(`/api/v1/forecast/region/${process.env.REGIAO}?token=${process.env.TOKEN_API_CLIMATEMPO}`)
+    .then((res) => {
       try {
+        const pathArquivoResultado: string = extraiPathArquivoResultado();
+
         let conteudo: string = '';
 
-        if (fs.existsSync(pathArquivoDeRelatorio)) {
-          conteudo = fs.readFileSync(pathArquivoDeRelatorio, { encoding: 'utf-8' });
+        if (fs.existsSync(pathArquivoResultado)) {
+          conteudo = fs.readFileSync(pathArquivoResultado, { encoding: 'utf-8' });
         }
 
         let novoConteudo: string = `* Métricas da região ${res.data.region}\n`;
@@ -53,9 +67,9 @@ function recuperaMetricasPorRegiao() {
 
         conteudo = novoConteudo + conteudo;
 
-        fs.writeFileSync(pathArquivoDeRelatorio, conteudo);
+        fs.writeFileSync(pathArquivoResultado, conteudo);
 
-        await enviaMensagemProMessengerPorWebSocket(novoConteudo)
+        enviaMensagemProMessengerPorWebSocket(novoConteudo);
 
         LOGGER.log('Finalizando step para recuperar métricas por região');
       } catch (e) {
@@ -67,16 +81,53 @@ function recuperaMetricasPorRegiao() {
     .finally(() => persisteLogs());
 }
 
-async function enviaMensagemProMessengerPorWebSocket(mensagem: string) {
-  let client = new WebSocket('ws://localhost:8080/messenger/' + process.env.SENDER_ID);
-  client.on('message', (msg) => LOGGER.log('Mensagem -> {}', msg));
-  LOGGER.log('Esperamos o cliente conectar com o servidor');
-  // Esperamos o cliente conectar com o servidor usando async/await
-  await new Promise((resolve) => client.once('open', resolve));
+function recuperaMetricasPorPais() {
+  LOGGER.log('Iniciando step para recuperar métricas por país');
 
-  LOGGER.log('Enviando mensagem no chat');
-  // Imprimi "Hello!", um para cada cliente
-  client.send(mensagem);
+  apiClimaTempo
+    .get(`/api/v1/anl/synoptic/locale/${process.env.PAIS}?token=${process.env.TOKEN_API_CLIMATEMPO}`)
+    .then((res) => {
+      try {
+        const pathArquivoResultado: string = extraiPathArquivoResultado();
+
+        let conteudo: string = '';
+
+        if (fs.existsSync(pathArquivoResultado)) {
+          conteudo = fs.readFileSync(pathArquivoResultado, { encoding: 'utf-8' });
+        }
+
+        const resposta = res.data[0];
+        let novoConteudo: string = `* Métricas do país, abreviação: ${resposta.country}\n`;
+
+        novoConteudo += `    - Data: ${resposta.date}\n    - ${resposta.text}\n\n`;
+
+        novoConteudo +=
+          '============================================================================================================================================\n\n\n';
+
+        conteudo = novoConteudo + conteudo;
+
+        fs.writeFileSync(pathArquivoResultado, conteudo);
+
+        enviaMensagemProMessengerPorWebSocket(novoConteudo);
+
+        LOGGER.log('Finalizando step para recuperar métricas por país');
+      } catch (e) {
+        LOGGER.error(e, 'Ocorreu um erro ao recuperar métricas por país');
+        persisteLogs();
+      }
+    })
+    .catch((e) => LOGGER.error(e, 'Ocorreu um erro ao recuperar métricas por país'))
+    .finally(() => persisteLogs());
+}
+
+function extraiPathArquivoResultado() {
+  const dataAtual: string = moment().format('YYYY-MM-DD');
+  return `${pathArquivoDeRelatorio}/relatorio-${dataAtual}.txt`;
+}
+
+function enviaMensagemProMessengerPorWebSocket(mensagem: string) {
+  LOGGER.log('Enviando mensagem pro WebSocket');
+  clientWebSocket.send(mensagem);
 }
 
 function persisteLogs() {
