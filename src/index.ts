@@ -3,6 +3,7 @@ import ConsoleLogger from './console-logger';
 import axios, { AxiosInstance } from 'axios';
 import fs from 'fs';
 import moment from 'moment';
+import WebSocket, { WebSocketServer } from 'ws';
 
 require('dotenv').config(); // Carrega o .env no process.env
 
@@ -33,7 +34,7 @@ cron.schedule(
 function recuperaMetricasPorRegiao() {
   apiClimaTempo
     .get(`/api/v1/forecast/region/${regiao}?token=${token}`)
-    .then((res) => {
+    .then(async (res) => {
       try {
         let conteudo: string = '';
 
@@ -54,6 +55,8 @@ function recuperaMetricasPorRegiao() {
 
         fs.writeFileSync(pathArquivoDeRelatorio, conteudo);
 
+        await enviaMensagemProMessengerPorWebSocket(novoConteudo)
+
         LOGGER.log('Finalizando step para recuperar métricas por região');
       } catch (e) {
         LOGGER.error(e, 'Ocorreu um erro ao recuperar métricas por região');
@@ -62,6 +65,18 @@ function recuperaMetricasPorRegiao() {
     })
     .catch((e) => LOGGER.error(e, 'Ocorreu um erro ao recuperar métricas por região'))
     .finally(() => persisteLogs());
+}
+
+async function enviaMensagemProMessengerPorWebSocket(mensagem: string) {
+  let client = new WebSocket('ws://localhost:8080/messenger/7099525940107412');
+  client.on('message', (msg) => LOGGER.log('Mensagem -> {}', msg));
+  LOGGER.log('Esperamos o cliente conectar com o servidor');
+  // Esperamos o cliente conectar com o servidor usando async/await
+  await new Promise((resolve) => client.once('open', resolve));
+
+  LOGGER.log('Enviando mensagem no chat');
+  // Imprimi "Hello!", um para cada cliente
+  client.send(mensagem);
 }
 
 function persisteLogs() {
