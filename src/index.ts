@@ -16,6 +16,7 @@ const apiClimaTempo: AxiosInstance = axios.create({ baseURL: urlApiClimaTempo })
 
 let clientWebSocket: WebSocket;
 
+LOGGER.log('Scheduling...');
 cron.schedule(
   process.env.CRON_JOB ?? '* * * * *',
   async () => {

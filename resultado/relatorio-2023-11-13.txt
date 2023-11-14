@@ -1,3 +1,23 @@
+* Métricas da região Sul
+    - Data: 13/11/2023
+    - https://imagens.climatempo.com.br/mapas/yysuprev1.gif
+
+    - Data: 14/11/2023
+    - https://imagens.climatempo.com.br/mapas/yysuprev2.gif
+
+    - Data: 15/11/2023
+    - https://imagens.climatempo.com.br/mapas/yysuprev3.gif
+
+============================================================================================================================================
+
+
+* Métricas do país, abreviação: BR
+    - Data: 2023-11-13
+    - Uma frente fria avança sobre o Sul do BR e provoca temporais no RS em SC nesta segunda. No PR, no centro-oeste, leste e sul de SP, no RJ e na zona da mata mineira, muito sol, calorão e pancadas isoladas de chuva entre a tarde e noite. Calor extremo e chuvas isoladas em MS e sul e oeste de MT. Sol, secura e muito calor em GO e no DF. Chuva isolada entre o litoral de SE e o leste do RN e tempo firme nas demais áreas do NE. No Norte, pancadas moderadas a fortes de chuva em RO, AM e AC. 
+
+============================================================================================================================================
+
+
 * Métricas do país, abreviação: BR
     - Data: 2023-11-13
     - Uma frente fria avança sobre o Sul do BR e provoca temporais no RS em SC nesta segunda. No PR, no centro-oeste, leste e sul de SP, no RJ e na zona da mata mineira, muito sol, calorão e pancadas isoladas de chuva entre a tarde e noite. Calor extremo e chuvas isoladas em MS e sul e oeste de MT. Sol, secura e muito calor em GO e no DF. Chuva isolada entre o litoral de SE e o leste do RN e tempo firme nas demais áreas do NE. No Norte, pancadas moderadas a fortes de chuva em RO, AM e AC. 
